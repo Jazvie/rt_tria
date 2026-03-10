@@ -90,6 +90,6 @@ class NormalizedBaseTransform(BaseTransform):
 
             # Ensure valid
             if self.ensure_max_of_audio:
-                signal[mask].ensure_max_of_audio()
+                signal[mask] = signal[mask].ensure_max_of_audio()
 
         return signal

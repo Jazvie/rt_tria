@@ -26,7 +26,7 @@ sample_idx: [0, 1, 2, 3, 4, 5, 6, 7]
 sample_rate: &sample_rate 44100
 
 # CFG dropout
-p_cfg_dropout: 0.2
+p_cfg_dropout: 0.8
 
 # Mask span width
 min_span_prop: 0.5
@@ -45,17 +45,18 @@ causal_bias: 1.0
 Tokenizer.name: dac
 
 # Rhythm features
-rhythm_features.sample_rate: 16000
-rhythm_features.n_bands: 2
-rhythm_features.n_mels: 40
-rhythm_features.window_length: 384
-rhythm_features.hop_length: 192
-rhythm_features.quantization_levels: 5
-rhythm_features.slow_ma_ms: 200
-rhythm_features.post_smooth_ms: 100
-rhythm_features.legacy_normalize: false
+rhythm_features.sample_rate: 44100
+rhythm_features.n_bands: 3
+rhythm_features.n_mels: 80
+rhythm_features.window_length: 1024
+rhythm_features.hop_length: 512
+rhythm_features.quantization_levels: 33
+rhythm_features.slow_ma_ms: null
+rhythm_features.post_smooth_ms: null
+rhythm_features.legacy_normalize: true
 rhythm_features.normalize_quantile: 0.98
 rhythm_features.clamp_max: 50.0
+
 
 ################################################################################
 # Model
@@ -65,7 +66,7 @@ rhythm_features.clamp_max: 50.0
 TRIA.codebook_size: 1024
 TRIA.n_codebooks: 9
 TRIA.n_channels: 512
-TRIA.n_feats: 2
+TRIA.n_feats: 3
 TRIA.n_heads: 8
 TRIA.n_layers: 12
 TRIA.mult: 4
@@ -102,16 +103,7 @@ train/StemDataset.n_examples: 10000000
 train/StemDataset.sources:
   - manifests/musdb_hq/train.csv
   - manifests/musdb_hq/test.csv
-
-  - manifests/moisesdb/train.csv
-  - manifests/moisesdb/val.csv
-  - manifests/moisesdb/test.csv
-
-  - manifests/fsl/train.csv
-  - manifests/fsl/val.csv
-  - manifests/fsl/test.csv
-
-train/StemDataset.source_weights: [.22, .03, .29, .03, .03, .32, .04, .04]
+train/StemDataset.source_weights: [0.89, 0.11]
 train/StemDataset.with_replacement: true
 
 val/StemDataset.n_examples: 2000
@@ -123,7 +115,7 @@ val/StemDataset.with_replacement: false
 # Augmentations
 ################################################################################
 
-tfm_prob: &tfm_prob 0.75
+tfm_prob: &tfm_prob 0.25
 
 train_rhythm/build_transform.names: [
   "BandPass",
@@ -154,7 +146,7 @@ BandPass.zeros: 2049
 ShiftPhase.prob: *tfm_prob
 
 PitchShift.prob: 1.0
-PitchShift.shift_semitones: [uniform, -6, 12]
+PitchShift.shift_semitones: [uniform, -6, 6]
 PitchShift.force_fast: true
 
 Equalizer.prob: *tfm_prob

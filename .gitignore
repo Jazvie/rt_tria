@@ -25,4 +25,4 @@ __pycache__/
 .pytest_cache
 *.ipynb_checkpoints
 
-preliminary_specification.md
+prelim_specification.md

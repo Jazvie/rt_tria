@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rt_tria"
+version = "0.0.2"
+description = "Real-time extension of TRIA."
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "argbind",
+    "descript-audiotools",
+    "flatten-dict",
+    "gradio",
+    "julius",
+    "librosa",
+    "numpy",
+    "primePy",
+    "rich",
+    "scipy",
+    "soundfile",
+    "tensorboard",
+    "torch",
+    "torchaudio",
+    "tqdm",
+    "jupyterlab",
+]
+
+[tool.setuptools.packages.find]
+include = ["tria*"]

@@ -16,9 +16,9 @@ This repository contains training and inference code for the TRIA "anything-to-d
 Clone the repo:
 
 ```
-git clone https://github.com/interactiveaudiolab/tria
-cd tria
-pip install -r requirements.txt
+git clone https://github.com/Jazvie/rt_tria
+cd rt_tria
+uv sync
 ```
 
 
@@ -32,7 +32,7 @@ chmod -R u+x scripts
 Launch the [Gradio](https://www.gradio.app/) interface:
 
 ```
-python app.py
+uv run python app.py
 ```
 
 <span style="color:red">More models and configurations coming soon!</span>
@@ -46,7 +46,7 @@ __Base Configuration (`26G`)__: the TRIA models discussed in our [paper](https:/
 
 ```
 ./scripts/download/download_data.sh <DATA_DIR>
-python scripts/setup/create_manifests.py
+uv run python scripts/setup/create_manifests.py
 ```
 
 where `<DATA_DIR>` is the directory in which you want to store data. At this point, you should be ready to [train](#single-gpu-training) TRIA from scratch!
@@ -55,21 +55,21 @@ __Additional Augmentations (`88G`)__: to enable additional noise and reverb augm
 
 ```
 ./scripts/download/download_extra_augs.sh
-python scripts/setup/create_extra_aug_manifests.py
+uv run python scripts/setup/create_extra_aug_manifests.py
 ```
 
 __Additional High-Quality Drum Data (`190G`)__: to obtain additional high-quality isolated drum data, you can download the [MoisesDB](https://music.ai/research/#datasets) dataset via the Moises.ai website; you will be prompted to fill out a form to access the dataset. Once you have downloaded the dataset and extracted it to your `<DATA_DIR>`, run:
 
 ```
-python scripts/setup/consolidate_moises.py
-python scripts/setup/create_moises_manifests.py
+uv run python scripts/setup/consolidate_moises.py
+uv run python scripts/setup/create_moises_manifests.py
 ```
 
 __Additional Drum Loops (`11G`)__: to obtain additional drum loops and improve the timbral diversity of training data, you can download the [FreeSound Loop Dataset](https://arxiv.org/abs/2008.11507). Filtering to remove short (<4s) and non-drum recordings results in a dataset of roughly 1800 loops spanning 7 hours. To download and prepare the dataset, run:
 
 ```
-./scripts/download/download_loops.py.sh
-python scripts/setup/create_loops_manifests.py
+./scripts/download/download_loops.sh
+uv run python scripts/setup/create_loops_manifests.py
 ```
 
 __Large-Scale Low-Quality Drum Data__: another way to scale drum data is to run a pre-trained source separation model on a large corpus of musical mixtures such as the [MTG-Jamendo](https://mtg.github.io/mtg-jamendo-dataset/) dataset (`152G`). In our experiments, training on [HDEMUCS](https://docs.pytorch.org/audio/stable/tutorials/hybrid_demucs_tutorial.html)-separated drum stems resulted in low-quality generations due to the prevalence of separation artifacts. However, it may still be possible to leverage such noisy data data by using it to train only "early" generation steps (e.g. coarse RVQ codebooks for masked language modeling).
@@ -118,7 +118,7 @@ One you have downloaded your chosen datasets, you can train on a single GPU with
 
 ```
 export CUDA_VISIBLE_DEVICES=0
-python scripts/train.py --args.load conf/paper_exp/small_musdb_2b.yml
+uv run python scripts/train.py --args.load conf/paper_exp/small_musdb_2b.yml
 ```
 
 ### Multi-GPU Training
@@ -127,14 +127,14 @@ You can train on multiple GPUs (e.g. 2) with:
 
 ```
 export CUDA_VISIBLE_DEVICES=0,1
-torchrun --nproc_per_node gpu scripts/train.py --args.load conf/paper_exp/small_musdb_2b.yml
+uv run torchrun --nproc_per_node gpu scripts/train.py --args.load conf/paper_exp/small_musdb_2b.yml
 ```
 
 ### Distillation
 
 We provide a [script](scripts/distill.py) (and corresponding [example configuration file](conf/distill/distill_tiny_musdb_moises_fsl_2b.yml)) to distill TRIA into a smaller model:
 ```
-torchrun --nproc_per_node gpu scripts/distill.py --args.load conf/distill_tiny_musdb_moises_fsl_2b.yml
+uv run torchrun --nproc_per_node gpu scripts/distill.py --args.load conf/distill/distill_tiny_musdb_moises_fsl_2b.yml
 ```
 
 ## Licenses

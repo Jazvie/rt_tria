@@ -5,6 +5,63 @@ import argparse
 import logging
 from pathlib import Path
 
+class StreamingWindowBuffer:
+    def __init__(self, channels: int, capacity: int, device="cpu", dtype=torch.float32):
+        self.buf = torch.zeros(channels, capacity, device=device, dtype=dtype)
+        self.capacity = capacity
+        self.write_pos = 0          # physical index in circular array
+        self.total_written = 0      # absolute sample count
+        self.next_start = 0         # absolute start of next inference window
+
+    def push(self, x):
+        # x: [C, T]
+        n = x.shape[-1]
+
+        if n >= self.capacity:
+            x = x[:, -self.capacity:]
+            n = x.shape[-1]
+
+        end = self.write_pos + n
+        if end <= self.capacity:
+            self.buf[:, self.write_pos:end] = x
+        else:
+            first = self.capacity - self.write_pos
+            self.buf[:, self.write_pos:] = x[:, :first]
+            self.buf[:, :end % self.capacity] = x[:, first:]
+
+        self.write_pos = end % self.capacity
+        self.total_written += n
+
+    def has_enough_for(self, window_size):
+        return (self.total_written - self.next_start) >= window_size
+
+    def _read_absolute(self, start, length):
+        # start is an absolute stream position
+        oldest_available = max(0, self.total_written - self.capacity)
+        if start < oldest_available:
+            raise ValueError("requested data already overwritten")
+        if start + length > self.total_written:
+            raise ValueError("requested data not written yet")
+
+        start_idx = start % self.capacity
+        end_idx = (start_idx + length) % self.capacity
+
+        if start_idx < end_idx or start_idx + length <= self.capacity:
+            return self.buf[:, start_idx:start_idx + length]
+        else:
+            first = self.capacity - start_idx
+            return torch.cat(
+                [self.buf[:, start_idx:], self.buf[:, :length - first]],
+                dim=-1,
+            )
+
+    def read_window(self, window_size):
+        return self._read_absolute(self.next_start, window_size)
+
+    def advance(self, hop):
+        self.next_start += hop
+
+
 def demo():
     # Download a model
     model_path = dac.utils.download(model_type="44khz")

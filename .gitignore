@@ -2,6 +2,8 @@
 data/*
 !tria/data
 !tria/data/*
+/codecs
+codecs/*
 
 /runs
 runs/*

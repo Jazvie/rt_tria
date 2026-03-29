@@ -4,6 +4,7 @@ import time
 import argparse
 import logging
 from pathlib import Path
+import torch
 
 class StreamingWindowBuffer:
     def __init__(self, channels: int, capacity: int, device="cpu", dtype=torch.float32):
